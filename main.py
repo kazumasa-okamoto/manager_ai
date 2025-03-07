@@ -16,6 +16,7 @@ if 'tasks' not in st.session_state:
 if 'task_id_counter' not in st.session_state:
     st.session_state.task_id_counter = 1  # タスクIDのカウンター
 
+st.title("タスク管理AI")
 # チャット履歴の表示
 st.write("## 会話履歴")
 for message in st.session_state.messages:
