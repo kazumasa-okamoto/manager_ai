@@ -1,6 +1,7 @@
 import streamlit as st
 from openai import OpenAI
 from datetime import datetime
+import os
 
 from src.task_processing import extract_tasks, save_tasks, get_tasks, delete_task, update_task_status
 from src.emotion_processing import classify_emotion
@@ -20,13 +21,14 @@ if "emotion" not in st.session_state:
     st.session_state.emotion = "無"  # 感情の初期値
 
 # 感情に対応する画像のパス
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 emotion_images = {
-    "喜": "assets\images\kairakun_joy.png",
-    "怒": "assets\images\kairakun_angry.png",
-    "哀": "assets\images\kairakun_sad.png",
-    "楽": "assets\images\kairakun_happy.png",
-    "無": "assets\images\kairakun_default.png",
-    "祝": "assets\images\kairakun_done.png"
+    "喜": os.path.join(BASE_DIR, "assets", "images", "kairakun_joy.png"),
+    "怒": os.path.join(BASE_DIR, "assets", "images", "kairakun_angry.png"),
+    "哀": os.path.join(BASE_DIR, "assets", "images", "kairakun_sad.png"),
+    "楽": os.path.join(BASE_DIR, "assets", "images", "kairakun_happy.png"),
+    "無": os.path.join(BASE_DIR, "assets", "images", "kairakun_default.png"),
+    "祝": os.path.join(BASE_DIR, "assets", "images", "kairakun_done.png")
 }
 
 # タイトルの表示
