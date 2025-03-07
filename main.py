@@ -3,6 +3,7 @@ from openai import OpenAI
 from datetime import datetime
 
 from src.task_processing import extract_tasks, save_tasks, get_tasks, delete_task, update_task_status
+from src.emotion_processing import classify_emotion
 
 OPENAI_API_KEY=st.secrets["openai"]["api_key"]
 
@@ -15,13 +16,29 @@ if 'tasks' not in st.session_state:
     st.session_state.tasks = []  # タスクのリスト
 if 'task_id_counter' not in st.session_state:
     st.session_state.task_id_counter = 1  # タスクIDのカウンター
+if "emotion" not in st.session_state:
+    st.session_state.emotion = "無"  # 感情の初期値
 
+# 感情に対応する画像のパス
+emotion_images = {
+    "喜": "assets\images\kairakun_joy.png",
+    "怒": "assets\images\kairakun_angry.png",
+    "哀": "assets\images\kairakun_sad.png",
+    "楽": "assets\images\kairakun_happy.png",
+    "無": "assets\images\kairakun_default.png",
+    "祝": "assets\images\kairakun_done.png"
+}
+
+# タイトルの表示
 st.title("タスク管理AI")
+# 画像の表示
+st.image(emotion_images[st.session_state.emotion])
 # チャット履歴の表示
-st.write("## 会話履歴")
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
+chat_container = st.container()
+with chat_container:
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.write(message["content"])
 
 with st.form("相談内容",clear_on_submit=True):
     user_input = st.text_input("相談内容を入力してください")
@@ -39,6 +56,10 @@ with st.form("相談内容",clear_on_submit=True):
           )
           bot_reply = response.choices[0].message.content
           st.session_state.messages.append({"role": "assistant", "content": bot_reply})
+
+          # 感情の分類
+          emotion = classify_emotion(bot_reply)
+          st.session_state.emotion = emotion
 
           # タスクの抽出
           tasks = extract_tasks(user_input)
@@ -68,6 +89,7 @@ else:
         if col2.button("完了", key=f"done_sidebar_{task_id}"):
             st.session_state[f"task_status_{task_id}"] = "done"
             update_task_status(task_id, "done")
+            st.session_state.emotion = "祝"
             st.rerun()
 
         current_status = status if state_key not in st.session_state else st.session_state[state_key]
