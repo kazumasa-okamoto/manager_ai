@@ -1,12 +1,10 @@
+import streamlit as st
 import sqlite3
 from openai import OpenAI
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
-OPENAI_API_KEY=os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY=st.secrets["openai"]["api_key"]
 
-client = OpenAI()
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 # SQLite データベースの初期化
 conn = sqlite3.connect("tasks.db", check_same_thread=False)
