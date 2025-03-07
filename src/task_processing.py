@@ -1,23 +1,18 @@
 import streamlit as st
-import sqlite3
 from openai import OpenAI
+from datetime import datetime
+
 
 OPENAI_API_KEY=st.secrets["openai"]["api_key"]
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# SQLite データベースの初期化
-conn = sqlite3.connect("tasks.db", check_same_thread=False)
-c = conn.cursor()
-c.execute("""
-    CREATE TABLE IF NOT EXISTS tasks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        task TEXT,
-        status TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-""")
-conn.commit()
+# セッションステートの初期化
+if 'tasks' not in st.session_state:
+    st.session_state.tasks = []  # タスクのリスト
+    
+if 'task_id_counter' not in st.session_state:
+    st.session_state.task_id_counter = 1  # タスクIDのカウンター
 
 # タスクをOpenAI APIから抽出
 def extract_tasks(user_input):
@@ -48,23 +43,32 @@ def extract_tasks(user_input):
     tasks = [task.strip("- ") for task in extracted_text.split("\n") if task.strip() and not task.startswith("タスクリスト")]
     return tasks
 
-# タスクをデータベースに保存
+# タスクを保存する関数
 def save_tasks(tasks):
     for task in tasks:
-        c.execute("INSERT INTO tasks (task, status) VALUES (?, 'pending')", (task,))
-    conn.commit()
+        # 新しいタスクを辞書形式で追加
+        new_task = {
+            'id': st.session_state.task_id_counter,
+            'task': task,
+            'status': 'pending',
+            'created_at': datetime.now()
+        }
+        st.session_state.tasks.append(new_task)
+        st.session_state.task_id_counter += 1
 
-# タスクの一覧を取得
+# タスクの一覧を取得する関数
 def get_tasks():
-    c.execute("SELECT id, task, status FROM tasks ORDER BY created_at DESC")
-    return c.fetchall()
+    # 作成日時の降順でソート
+    return sorted(st.session_state.tasks, key=lambda x: x['created_at'], reverse=True)
 
-# タスクを削除
+# タスクを削除する関数
 def delete_task(task_id):
-    c.execute("DELETE FROM tasks WHERE id=?", (task_id,))
-    conn.commit()
+    st.session_state.tasks = [task for task in st.session_state.tasks if task['id'] != task_id]
 
-# タスクの完了状態を更新
+
+# タスクの完了状態を更新する関数
 def update_task_status(task_id, status):
-    c.execute("UPDATE tasks SET status=? WHERE id=?", (status, task_id))
-    conn.commit()
+    for task in st.session_state.tasks:
+        if task['id'] == task_id:
+            task['status'] = status
+            break
