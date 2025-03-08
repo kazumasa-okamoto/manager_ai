@@ -33,10 +33,20 @@ emotion_images = {
 
 # タイトルの表示
 st.title("タスク管理AI")
+
+st.write("")
+st.write("")
+
 # 画像の表示
-st.image(emotion_images[st.session_state.emotion])
+col1, col2, col3 = st.columns([1, 1, 1])
+with col2:
+    st.image(emotion_images[st.session_state.emotion], width=200)
+
+st.write("")
+st.write("")
+
 # チャット履歴の表示
-chat_container = st.container()
+chat_container = st.container(height=500)
 with chat_container:
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
