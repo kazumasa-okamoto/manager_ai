@@ -124,8 +124,12 @@ def get_tasks(creds):
     
     # Google Tasks APIからタスクを取得
     google_tasks = fetch_google_tasks(creds)
-    # セッションステートを更新
-    st.session_state.tasks = google_tasks
+    # 既存のタスクIDを取得
+    existing_task_ids = {task['id'] for task in st.session_state.tasks}
+    # 重複しないタスクのみを追加
+    for task in google_tasks:
+        if task['id'] not in existing_task_ids:
+            st.session_state.tasks.append(task)
     
     # 作成日時の降順でソート
     return sorted(st.session_state.tasks, key=lambda x: x['updated'], reverse=True)
