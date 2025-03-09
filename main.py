@@ -122,38 +122,49 @@ with st.form("相談内容",clear_on_submit=True):
           # UIを更新
           st.rerun()
 
-st.sidebar.write("## タスク一覧")
-tasks = get_tasks(creds)
-if not tasks:
-    st.sidebar.write("現在、タスクはありません。")
-else:
-    for task_item in tasks:
-        col1, col2, col3 = st.sidebar.columns([6, 2, 2])
+task_container = st.sidebar.container(height=600)
+with task_container:
+    st.write("## タスク一覧")
+    tasks = get_tasks(creds)
+    if not tasks:
+        st.write("現在、タスクはありません。")
+    else:
+        for task_item in tasks:
+            col1, col2, col3 = st.columns([6, 2, 2])
 
-        task_id = task_item["id"]
-        task_text = task_item["title"]
-        status = task_item["status"]
-        
-        state_key = f"task_status_{task_id}"
-        
-        # セッション状態にキーが存在しない場合は初期化
-        if state_key not in st.session_state:
-            st.session_state[state_key] = status
+            task_id = task_item["id"]
+            task_text = task_item["title"]
+            status = task_item["status"]
+            
+            state_key = f"task_status_{task_id}"
+            
+            # セッション状態にキーが存在しない場合は初期化
+            if state_key not in st.session_state:
+                st.session_state[state_key] = status
 
-        current_status = st.session_state[state_key]
-        col1.write(f"✅ {task_text}" if current_status == "completed" else f"⬜ {task_text}")
+            current_status = st.session_state[state_key]
+            col1.write(f"✅ {task_text}" if current_status == "completed" else f"⬜ {task_text}")
 
-        if col2.button("完了", key=f"done_sidebar_{task_id}"):
-            if st.session_state[state_key] == "needsAction":
-                st.session_state[state_key] = "completed"
-                update_task_status(task_id, "completed", creds)
-                st.session_state.emotion = "祝"
-            else:
-                st.session_state[state_key] = "needsAction"
-                update_task_status(task_id, "needsAction", creds)
-                st.session_state.emotion = "無"
-            st.rerun()
-        
-        if col3.button("削除", key=f"delete_sidebar_{task_id}"):
-            delete_task(task_id, creds)
-            st.rerun()
+            if col2.button("完了", key=f"done_sidebar_{task_id}"):
+                if st.session_state[state_key] == "needsAction":
+                    st.session_state[state_key] = "completed"
+                    update_task_status(task_id, "completed", creds)
+                    st.session_state.emotion = "祝"
+                else:
+                    st.session_state[state_key] = "needsAction"
+                    update_task_status(task_id, "needsAction", creds)
+                    st.session_state.emotion = "無"
+                st.rerun()
+            
+            if col3.button("削除", key=f"delete_sidebar_{task_id}"):
+                delete_task(task_id, creds)
+                st.rerun()
+
+with st.sidebar.form("タスク",clear_on_submit=True):
+    user_input = st.text_input("タスクを入力してください")
+    submitted = st.form_submit_button("追加")
+    if submitted:
+      if user_input:
+          save_tasks([user_input], creds)
+          st.session_state.emotion = "祝"
+          st.rerun()
