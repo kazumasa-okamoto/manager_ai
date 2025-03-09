@@ -83,7 +83,10 @@ st.write("")
 # 画像の表示
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
-    st.image(emotion_images[st.session_state.emotion], width=200)
+    current_emotion = st.session_state.emotion
+    if current_emotion not in emotion_images:
+        current_emotion = "無"
+    st.image(emotion_images[current_emotion], width=200)
 
 st.write("")
 st.write("")
