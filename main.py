@@ -77,22 +77,14 @@ else:
 # タイトルの表示
 st.title("タスク管理AI")
 
-st.write("")
-st.write("")
-
 # 画像の表示
-col1, col2, col3 = st.columns([1, 1, 1])
-with col2:
-    current_emotion = st.session_state.emotion
-    if current_emotion not in emotion_images:
-        current_emotion = "無"
-    st.image(emotion_images[current_emotion], width=200)
-
-st.write("")
-st.write("")
+current_emotion = st.session_state.emotion
+if current_emotion not in emotion_images:
+    current_emotion = "無"
+st.sidebar.image(emotion_images[current_emotion])
 
 # チャット履歴の表示
-chat_container = st.container(height=500)
+chat_container = st.container(height=800)
 with chat_container:
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
@@ -141,18 +133,27 @@ else:
         task_id = task_item["id"]
         task_text = task_item["title"]
         status = task_item["status"]
-
+        
         state_key = f"task_status_{task_id}"
+        
+        # セッション状態にキーが存在しない場合は初期化
+        if state_key not in st.session_state:
+            st.session_state[state_key] = status
 
-        if col2.button("完了", key=f"done_sidebar_{task_id}"):
-            st.session_state[f"task_status_{task_id}"] = "completed"
-            update_task_status(task_id, "completed", creds)
-            st.session_state.emotion = "祝"
-            st.rerun()
-
-        current_status = status if state_key not in st.session_state else st.session_state[state_key]
+        current_status = st.session_state[state_key]
         col1.write(f"✅ {task_text}" if current_status == "completed" else f"⬜ {task_text}")
 
+        if col2.button("完了", key=f"done_sidebar_{task_id}"):
+            if st.session_state[state_key] == "needsAction":
+                st.session_state[state_key] = "completed"
+                update_task_status(task_id, "completed", creds)
+                st.session_state.emotion = "祝"
+            else:
+                st.session_state[state_key] = "needsAction"
+                update_task_status(task_id, "needsAction", creds)
+                st.session_state.emotion = "無"
+            st.rerun()
+        
         if col3.button("削除", key=f"delete_sidebar_{task_id}"):
             delete_task(task_id, creds)
             st.rerun()
