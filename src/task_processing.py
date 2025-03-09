@@ -156,30 +156,34 @@ def delete_task(task_id, creds):
 
 # タスクの完了状態を更新する関数
 def update_task_status(task_id, status, creds):
-    # session_stateの更新
-    for task in st.session_state.tasks:
-        if task['id'] == task_id:
-            task['status'] = status
-            break
+    if creds is not None:
+        try:
+            service = build('tasks', 'v1', credentials=creds)
+            tasklist_id = "@default"
 
-    if creds is None:
-        return
-    
-    service = build('tasks', 'v1', credentials=creds)
-    tasklist_id = "@default"
+            # タスクの完了時刻を設定
+            if status == "completed":
+                body = {
+                    "status": "completed",
+                    "completed": datetime.now(timezone.utc).isoformat()
+                }
+            else:
+                body = {"status": status}
 
-    try:
-        # タスクの完了時刻を設定
-        if status == "completed":
-            body = {
-                "status": "completed",
-                "completed": datetime.utcnow().isoformat() + "Z"
-            }
-        else:
-            body = {"status": status}
-
-        # Google Tasks APIでタスクを更新
-        service.tasks().update(tasklist=tasklist_id, task=task_id, body=body).execute()
-
-    except Exception as e:
-        st.error(f"Google Tasksの更新に失敗しました: {e}")
+            # Google Tasks APIでタスクを更新
+            service.tasks().update(tasklist=tasklist_id, task=task_id, body=body).execute()
+            
+            for task in st.session_state.tasks:
+                if task['id'] == task_id:
+                    task['status'] = status
+                    break
+                    
+        except Exception as e:
+            st.error(f"Google Tasksの更新に失敗しました: {e}")
+        
+    else:
+        # 認証情報がない場合は、ローカルのみ更新
+        for task in st.session_state.tasks:
+            if task['id'] == task_id:
+                task['status'] = statusget
+                break
