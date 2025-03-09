@@ -161,18 +161,23 @@ def update_task_status(task_id, status, creds):
             service = build('tasks', 'v1', credentials=creds)
             tasklist_id = "@default"
 
-            # タスクの完了時刻を設定
-            if status == "completed":
-                body = {
-                    "status": "completed",
-                    "completed": datetime.now(timezone.utc).isoformat()
-                }
-            else:
-                body = {"status": status}
-
-            # Google Tasks APIでタスクを更新
-            service.tasks().update(tasklist=tasklist_id, task=task_id, body=body).execute()
+            # 現在のタスク情報を取得
+            task = service.tasks().get(tasklist=tasklist_id, task=task_id).execute()
             
+            # タスクのステータスを更新
+            if status == "completed":
+                # 完了状態に設定
+                task['status'] = "completed"
+                task['completed'] = datetime.now(timezone.utc).isoformat()
+            else:
+                # 未完了状態に設定
+                task['status'] = status
+                if 'completed' in task:
+                    del task['completed']  # 完了日時を削除
+            
+            # Google Tasks APIでタスクを更新
+            service.tasks().update(tasklist=tasklist_id, task=task_id, body=task).execute()
+            # セッションステートの更新
             for task in st.session_state.tasks:
                 if task['id'] == task_id:
                     task['status'] = status
@@ -185,5 +190,5 @@ def update_task_status(task_id, status, creds):
         # 認証情報がない場合は、ローカルのみ更新
         for task in st.session_state.tasks:
             if task['id'] == task_id:
-                task['status'] = statusget
+                task['status'] = status
                 break
