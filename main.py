@@ -5,7 +5,7 @@ import os
 import google.oauth2.credentials
 import googleapiclient.discovery
 
-from src.task_processing import extract_tasks, save_tasks, get_tasks, delete_task, update_task_status
+from src.task_processing import extract_tasks, save_tasks, get_tasks, delete_task, update_task_status,update_priority
 from src.emotion_processing import classify_emotion
 from src.authorization import get_authorization_url, get_credentials
 
@@ -118,6 +118,7 @@ with st.form("相談内容",clear_on_submit=True):
               for task in tasks:
                   st.session_state.messages.append({"role": "assistant", "content": f"- {task}"})
               save_tasks(tasks, creds)
+          
 
           # UIを更新
           st.rerun()
@@ -130,12 +131,12 @@ with task_container:
         st.write("現在、タスクはありません。")
     else:
         for task_item in tasks:
-            col1, col2, col3 = st.columns([6, 2, 2])
+            col1, col2, col3,col4 = st.columns([3, 1, 1, 1])
 
             task_id = task_item["id"]
             task_text = task_item["title"]
             status = task_item["status"]
-            
+            priority = task_item.get("priority", "Medium")
             state_key = f"task_status_{task_id}"
             
             # セッション状態にキーが存在しない場合は初期化
@@ -159,6 +160,14 @@ with task_container:
             if col3.button("削除", key=f"delete_sidebar_{task_id}"):
                 delete_task(task_id, creds)
                 st.rerun()
+                
+            with col4:
+                new_priority = st.selectbox("Priority", ["High", "Medium", "Low"], 
+                                    index=["High", "Medium", "Low"].index(priority),
+                                    key=f"priority_{task_id}")
+                if new_priority != priority:  # 修正: 以前の priority 値と比較
+                    update_priority(task_id, new_priority)
+                    st.rerun()
 
 with st.sidebar.form("タスク",clear_on_submit=True):
     user_input = st.text_input("タスクを入力してください")
