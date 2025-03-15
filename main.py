@@ -138,7 +138,7 @@ with task_container:
         st.write("現在、タスクはありません。")
     else:
         for task_item in tasks:
-            col1, col2, col3,col4 = st.columns([3, 1, 1, 1])
+            col1, col2, col3, col4 = st.columns([3, 1, 1, 2])
 
             task_id = task_item["id"]
             task_text = task_item["title"]
