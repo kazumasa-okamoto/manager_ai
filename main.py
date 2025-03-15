@@ -97,12 +97,19 @@ with st.form("相談内容",clear_on_submit=True):
       if user_input:
           # ユーザーメッセージを保存
           st.session_state.messages.append({"role": "user", "content": user_input})
-
+          # 現在のタスクを取得
+          current_tasks = get_tasks(creds)
+          # タスクの名前と状態を取得
+          task_content = "現在のタスク一覧:\n" + "\n".join([f"- {task['title']} (状態: {task['status']})" for task in current_tasks])
+          
           # OpenAI に会話の続きを依頼
           response = client.chat.completions.create(
               model="gpt-4o",
-              messages=[{"role": "system", "content": "あなたは親身に相談に乗るAIアシスタントです。"},
-                        *st.session_state.messages]
+              messages=[
+                  {"role": "system", "content": "あなたは優秀なタスク管理AIアシスタントです"},
+                  *st.session_state.messages,
+                  {"role": "system", "content": task_content},
+              ]
           )
           bot_reply = response.choices[0].message.content
           st.session_state.messages.append({"role": "assistant", "content": bot_reply})
@@ -112,7 +119,7 @@ with st.form("相談内容",clear_on_submit=True):
           st.session_state.emotion = emotion
 
           # タスクの抽出
-          tasks = extract_tasks(user_input)
+          tasks = extract_tasks(user_input, task_content)
           if tasks:
               st.session_state.messages.append({"role": "assistant", "content": "以下のタスクを作成しました:"})
               for task in tasks:

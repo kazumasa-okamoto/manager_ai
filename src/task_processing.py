@@ -15,24 +15,36 @@ if 'task_id_counter' not in st.session_state:
     st.session_state.task_id_counter = 1  # タスクIDのカウンター
 
 # ユーザーの入力からタスクを抽出する関数
-def extract_tasks(user_input):
+def extract_tasks(user_input, task_content=None):
+    task_list = "現在タスクはありません。" if task_content is None else task_content.strip()
+    
     prompt = f"""
-    ユーザーが以下のように会話を進めています：
-    "{user_input}"
-    この内容がタスクに関係しているかを判断してください。
-    - 関連があるなら、その内容を具体的なタスクとしてリストアップしてください。
-    - 関連がなければ、「なし」と答えてください。
+    【現在のタスク一覧】
+    {task_list}
 
-    出力は以下のフォーマットで：
+    【ユーザーの入力】
+    "{user_input}"
+
+    【指示】
+    上記のユーザーの入力から、タスクとして管理すべき項目を抽出してください。
+
+    以下の基準で判断してください：
+    1. ユーザーが実行する必要がある具体的な行動であること
+    2. 既存のタスク一覧に含まれていない新規のタスクであること
+    3. 期限や具体的な行動が明確なものを優先すること
+
+    【出力形式】
+    必ず以下のフォーマットで出力してください：
     タスクリスト:
-    - タスク1
-    - タスク2
-    （または「なし」）
+    - [具体的なタスク内容]
+    - [具体的なタスク内容]
+
+    ※抽出すべきタスクがない場合は「なし」と出力してください
     """
 
     response = client.chat.completions.create(
         model="gpt-4o",
-        messages=[{"role": "system", "content": "あなたはユーザーの相談を受け、タスクがあるかを判断するAIです。"},
+        messages=[{"role": "system", "content": "あなたはユーザーの会話から適切にタスクを抽出する優秀なAIです。"},
                   {"role": "user", "content": prompt}]
     )
 
