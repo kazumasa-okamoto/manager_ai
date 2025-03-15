@@ -95,7 +95,8 @@ def save_tasks(tasks, creds):
             'id': task_id,  # Google Tasks APIのID、または仮のID
             'title': task,  # タスク名
             'status': 'needsAction',  # 未完了の状態
-            'updated': datetime.now(timezone.utc).isoformat()  # UTC形式のタイムスタンプ
+            'updated': datetime.now(timezone.utc).isoformat(),  # UTC形式のタイムスタンプ
+            'priority': 'Medium', 
         }
         st.session_state.tasks.append(new_task)
         st.session_state.task_id_counter += 1  # 次のタスクのカウンターを更新
@@ -119,7 +120,8 @@ def fetch_google_tasks(creds):
                 'id': task['id'],
                 'title': task['title'],
                 'status': task.get('status', 'needsAction'),
-                'updated': task.get('updated', datetime.now(timezone.utc).isoformat())
+                'updated': task.get('updated', datetime.now(timezone.utc).isoformat()),
+                'priority': task.get('priority', "Meduim" ) # 優先度を追加
             })
         
         return formatted_tasks
@@ -204,3 +206,13 @@ def update_task_status(task_id, status, creds):
             if task['id'] == task_id:
                 task['status'] = status
                 break
+
+
+# タスクの優先度を変更する関数
+def update_priority(task_id, priority):
+    for task in st.session_state.tasks:
+        if task['id'] == task_id:
+            task['priority'] = priority
+            break
+
+    
