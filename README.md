@@ -1,6 +1,10 @@
 # タスク管理AI
 [KaiRA生成AIハッカソン2025](https://kaira-thesis-reading.connpass.com/event/347239/)で制作したタスク管理チャットボットです。
 
+チャットから自動でタスクを抽出し、優先度を評価します。
+
+現在のタスクを要約させたり、タイムスケジュールを生成させたりすることも可能です。
+
 Google Tasks APIを用いて生成したタスクを同期することができます。
 
 ![実行画面のスクリーンショット](assets/images/screenshot.png)
