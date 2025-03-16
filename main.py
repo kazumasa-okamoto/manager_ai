@@ -28,12 +28,17 @@ if "credentials" not in st.session_state:
 # 感情に対応する画像のパス
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 emotion_images = {
+    "無": os.path.join(BASE_DIR, "assets", "images", "kairakun_default.png"),
     "喜": os.path.join(BASE_DIR, "assets", "images", "kairakun_joy.png"),
     "怒": os.path.join(BASE_DIR, "assets", "images", "kairakun_angry.png"),
     "哀": os.path.join(BASE_DIR, "assets", "images", "kairakun_sad.png"),
     "楽": os.path.join(BASE_DIR, "assets", "images", "kairakun_happy.png"),
-    "無": os.path.join(BASE_DIR, "assets", "images", "kairakun_default.png"),
-    "祝": os.path.join(BASE_DIR, "assets", "images", "kairakun_done.png")
+    "驚": os.path.join(BASE_DIR, "assets", "images", "kairakun_surprise.png"),
+    "困": os.path.join(BASE_DIR, "assets", "images", "kairakun_trouble.png"),
+    "疑": os.path.join(BASE_DIR, "assets", "images", "kairakun_question.png"),
+    "焦": os.path.join(BASE_DIR, "assets", "images", "kairakun_hurry.png"),
+    "覚": os.path.join(BASE_DIR, "assets", "images", "kairakun_notice.png"),
+    "祝": os.path.join(BASE_DIR, "assets", "images", "kairakun_love.png")
 }
 
 # 認証処理
@@ -182,5 +187,5 @@ with st.sidebar.form("タスク",clear_on_submit=True):
     if submitted:
       if user_input:
           save_tasks([user_input], creds)
-          st.session_state.emotion = "祝"
+          st.session_state.emotion = "覚"
           st.rerun()
