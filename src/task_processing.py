@@ -122,7 +122,7 @@ def fetch_google_tasks(creds):
                 'title': task['title'],
                 'status': task.get('status', 'needsAction'),
                 'updated': task.get('updated', datetime.now(timezone.utc).isoformat()),
-                'priority': task.get('priority', "Meduim" ) # 優先度を追加
+                'priority': task.get('priority', "Medium" ) # 優先度を追加
             })
         
         return formatted_tasks
