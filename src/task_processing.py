@@ -73,11 +73,54 @@ def add_task_to_google_tasks(title, creds):
     task = service.tasks().insert(tasklist=tasklist_id, body=task_body).execute()
     return task  # APIから返されたタスク情報を返す
 
+def determine_priority_bulk(task_titles):
+    prompt = """
+    以下のタスクの優先度を High, Medium, Low の3段階で判定してください。
+
+    【判定基準】
+    - 期限が近いもの、高い影響を持つもの → High
+    - 期限があるが緊急性が低いもの、または重要だが期限がないもの → Medium
+    - 緊急性も低く、影響も小さいもの → Low
+
+    【出力形式】
+    - タスク1: 優先度
+    - タスク2: 優先度
+    ...
+
+    【タスク一覧】
+    """
+
+    prompt += "\n".join([f"- {title}" for title in task_titles])
+
+    response =client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "system", "content": "あなたはタスクの優先度を適切に評価するAIです。"},
+                  {"role": "user", "content": prompt}]
+    )
+
+    extracted_text = response.choices[0].message.content
+
+
+    # 結果を辞書形式でパース
+    priorities = {}
+    for line in extracted_text.split("\n"):
+        parts = line.split(": ")
+        if len(parts) == 2:
+            task_title, priority = parts
+            priorities[task_title.strip("- ")] = priority.strip()
+
+    return priorities
+
+
 # タスクを保存する関数
 def save_tasks(tasks, creds):
+    priorities = determine_priority_bulk(tasks)
+
     for task in tasks:
         temp_id = str(st.session_state.task_id_counter)
-        
+        priority = priorities.get(task, "Medium")  # 確実に辞書から取得
+
+
         if creds is None:
             # 認証情報がない場合は、ローカルのセッションステートにのみ保存
             task_id = temp_id
@@ -97,7 +140,7 @@ def save_tasks(tasks, creds):
             'title': task,  # タスク名
             'status': 'needsAction',  # 未完了の状態
             'updated': datetime.now(timezone.utc).isoformat(),  # UTC形式のタイムスタンプ
-            'priority': 'Medium', 
+            'priority': priority , 
         }
         st.session_state.tasks.append(new_task)
         st.session_state.task_id_counter += 1  # 次のタスクのカウンターを更新
@@ -113,16 +156,24 @@ def fetch_google_tasks(creds):
 
     try:
         response = service.tasks().list(tasklist=tasklist_id).execute()
-        formatted_tasks = []  # 結果を入れるリスト
+        tasks = response.get('items', [])
 
-        for task in response.get('items', []):
+        # タスク名のリストを取得（タイトルが存在する場合のみ）
+        task_titles = [task["title"] for task in tasks if "title" in task]
+
+        # 優先順位を判定
+        priorities = determine_priority_bulk(task_titles) if task_titles else {}
+
+        formatted_tasks = []  
+
+        for task in tasks:
             formatted_tasks.append({
                 'kind': task.get('kind', 'tasks#task'),
                 'id': task['id'],
                 'title': task['title'],
                 'status': task.get('status', 'needsAction'),
                 'updated': task.get('updated', datetime.now(timezone.utc).isoformat()),
-                'priority': task.get('priority', "Medium" ) # 優先度を追加
+                'priority': priorities.get(task["title"], "Medium"),
             })
         
         return formatted_tasks
@@ -130,6 +181,10 @@ def fetch_google_tasks(creds):
     except Exception as e:
         st.error(f"Google Tasksの取得に失敗しました: {e}")
         return []
+
+
+
+
 
 # タスクの一覧を取得する関数
 def get_tasks(creds):

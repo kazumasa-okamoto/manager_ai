@@ -5,7 +5,7 @@ import os
 import google.oauth2.credentials
 import googleapiclient.discovery
 
-from src.task_processing import extract_tasks, save_tasks, get_tasks, delete_task, update_task_status,update_priority
+from src.task_processing import extract_tasks, save_tasks, get_tasks, delete_task, update_task_status,update_priority, determine_priority_bulk
 from src.emotion_processing import classify_emotion
 from src.authorization import get_authorization_url, get_credentials
 
@@ -149,7 +149,7 @@ with task_container:
             task_id = task_item["id"]
             task_text = task_item["title"]
             status = task_item["status"]
-            priority = task_item.get("priority", "Medium")
+            priority = task_item["priority"]
             state_key = f"task_status_{task_id}"
             
             # セッション状態にキーが存在しない場合は初期化
