@@ -11,6 +11,7 @@ CLIENT_SECRET = st.secrets["google"]["client_secret"]
 REDIRECT_URI = st.secrets["google"]["redirect_uri"]
 SCOPES = ["https://www.googleapis.com/auth/tasks"]
 
+
 def get_authorization_url():
     """認証 URL を生成"""
     # セッションごとに一意のステートパラメータを生成
@@ -40,6 +41,7 @@ def get_authorization_url():
     )
     return auth_url
 
+
 def get_credentials(auth_code, state=None):
     """認証コードからトークンを取得"""
     # ステートパラメータの検証
@@ -67,3 +69,4 @@ def get_credentials(auth_code, state=None):
     except Exception as e:
         st.error(f"トークンの取得に失敗しました: {e}")
         raise
+

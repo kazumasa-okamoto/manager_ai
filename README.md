@@ -3,6 +3,8 @@
 
 Google Tasks APIを用いて生成したタスクを同期することができます。
 
+![実行画面のスクリーンショット](assets/images/screenshot.png)
+
 ## 仮想環境での実行
 1. **リポジトリをクローン**
 ```
@@ -30,3 +32,4 @@ pip install -r requirements.txt
 ```
 streamlit run main.py
 ```
+

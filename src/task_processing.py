@@ -10,9 +10,9 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 # セッションステートの初期化
 if 'tasks' not in st.session_state:
     st.session_state.tasks = []  # タスクのリスト
-    
 if 'task_id_counter' not in st.session_state:
     st.session_state.task_id_counter = 1  # タスクIDのカウンター
+
 
 # ユーザーの入力からタスクを抽出する関数
 def extract_tasks(chat_history=None, task_content=None):
@@ -56,6 +56,7 @@ def extract_tasks(chat_history=None, task_content=None):
     tasks = [task.strip("- ") for task in extracted_text.split("\n") if task.strip() and not task.startswith("タスクリスト")]
     return tasks
 
+
 # Google Tasks APIにタスクを追加する関数
 def add_task_to_google_tasks(title, creds):
     if creds is None:
@@ -72,6 +73,7 @@ def add_task_to_google_tasks(title, creds):
     # Google Tasks API にタスクを追加
     task = service.tasks().insert(tasklist=tasklist_id, body=task_body).execute()
     return task  # APIから返されたタスク情報を返す
+
 
 def determine_priority_bulk(task_titles):
     prompt = """
@@ -145,6 +147,7 @@ def save_tasks(tasks, creds):
         st.session_state.tasks.append(new_task)
         st.session_state.task_id_counter += 1  # 次のタスクのカウンターを更新
 
+
 # Google Tasks APIからタスクを取得する関数
 def fetch_google_tasks(creds):
     if creds is None:
@@ -183,9 +186,6 @@ def fetch_google_tasks(creds):
         return []
 
 
-
-
-
 # タスクの一覧を取得する関数
 def get_tasks(creds):
     if creds is None:
@@ -203,6 +203,7 @@ def get_tasks(creds):
     
     # 作成日時の降順でソート
     return sorted(st.session_state.tasks, key=lambda x: x['updated'], reverse=True)
+
 
 # タスクを削除する関数
 def delete_task(task_id, creds):
@@ -223,6 +224,7 @@ def delete_task(task_id, creds):
 
     # session_stateから削除
     st.session_state.tasks = [task for task in st.session_state.tasks if task['id'] != task_id]
+
 
 # タスクの完了状態を更新する関数
 def update_task_status(task_id, status, creds):
@@ -271,4 +273,3 @@ def update_priority(task_id, priority):
             task['priority'] = priority
             break
 
-    

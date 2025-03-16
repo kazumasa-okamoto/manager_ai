@@ -23,3 +23,4 @@ def classify_emotion(bot_reply):
     
     emotion = response.choices[0].message.content.strip()
     return emotion
+

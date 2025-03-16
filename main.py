@@ -190,3 +190,4 @@ with st.sidebar.form("タスク",clear_on_submit=True):
           save_tasks([user_input], creds)
           st.session_state.emotion = "覚"
           st.rerun()
+
