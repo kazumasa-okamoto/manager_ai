@@ -15,18 +15,19 @@ if 'task_id_counter' not in st.session_state:
     st.session_state.task_id_counter = 1  # タスクIDのカウンター
 
 # ユーザーの入力からタスクを抽出する関数
-def extract_tasks(user_input, task_content=None):
+def extract_tasks(chat_history=None, task_content=None):
+    chat_log = "会話がありません。" if chat_history is None else chat_history.strip()
     task_list = "現在タスクはありません。" if task_content is None else task_content.strip()
     
     prompt = f"""
     【現在のタスク一覧】
     {task_list}
 
-    【ユーザーの入力】
-    "{user_input}"
+    【会話履歴】
+    {chat_log}
 
     【指示】
-    上記のユーザーの入力から、タスクとして管理すべき項目を抽出してください。
+    上記の会話履歴から、タスクとして管理すべき項目を抽出してください。
 
     以下の基準で判断してください：
     1. ユーザーが実行する必要がある具体的な行動であること

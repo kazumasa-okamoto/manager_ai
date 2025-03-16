@@ -124,7 +124,8 @@ with st.form("相談内容",clear_on_submit=True):
           st.session_state.emotion = emotion
 
           # タスクの抽出
-          tasks = extract_tasks(user_input, task_content)
+          chat_history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages])
+          tasks = extract_tasks(chat_history, task_content)
           if tasks:
               st.session_state.messages.append({"role": "assistant", "content": "以下のタスクを作成しました:"})
               for task in tasks:
